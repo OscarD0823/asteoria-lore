@@ -1,0 +1,13 @@
+{
+  "name": "@asteoria/lore",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "license": "AGPL-3.0-or-later",
+  "author": "OscarD0823",
+  "scripts": {
+    "dev": "node tools/workspace.mjs dev",
+    "test": "node tools/workspace.mjs test",
+    "build": "node tools/workspace.mjs build"
+  }
+}

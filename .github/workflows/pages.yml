@@ -1,0 +1,19 @@
+name: Publicar Asteoria Lore BETA
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+  schedule:
+    - cron: '12,27,42,57 * * * *'
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+concurrency:
+  group: github-pages
+  cancel-in-progress: false
+jobs:
+  product:
+    uses: OscarD0823/asteoria/.github/workflows/product-pages.yml@main
+    with:
+      kind: stories
