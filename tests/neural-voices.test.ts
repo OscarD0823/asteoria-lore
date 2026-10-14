@@ -6,6 +6,7 @@ import {defaultAudiobook,defaultVoice,validateAudiobook,voiceFor,clockTime,upgra
 import {detectTextLanguage,resolveNeuralVoice,chapterLanguage,neuralVoices} from '../src/voice-language';
 import {verifiedModel,saveVoiceModel,readVoiceModel,removeVoiceModel,storedVoiceModels} from '../src/neural-cache';
 import {splitSpeech,LocalVoiceEngine} from '../src/audio-engine';
+import {modelPhonemeIds} from '../src/phoneme-model';
 
 test('idioma automático reconoce escritura de diez idiomas y evita inventarlo en frases breves',()=>{
  const samples=[
@@ -38,6 +39,13 @@ test('modelos neuronales están fijados por URL inmutable, tamaño, hash y habla
  assert.equal(new Set(neuralVoices.map(v=>v.language)).size,10);
  for(const v of neuralVoices){assert.match(v.url,/\/resolve\/[0-9a-f]{40}\//);assert.match(v.sha256,/^[0-9a-f]{64}$/);assert.ok(v.bytes>10000000);assert.ok(v.speaker>=0&&v.speaker<v.config.num_speakers);assert.ok(!/NC|Unknown/i.test(v.license));}
  const a=defaultAudiobook();validateAudiobook(a,new Set());a.voices.narrator.profile='piper:missing';assert.throws(()=>validateAudiobook(a,new Set()),/voz/);
+});
+test('cada voz usa su vocabulario, incluido IPA compuesto en modelos antiguos',()=>{
+ const old=neuralVoices.find(v=>v.id==='de_DE-kerstin-low-0')!,current=neuralVoices.find(v=>v.id==='de_DE-thorsten-high-0')!;
+ assert.deepEqual(modelPhonemeIds(['c','\u0327'],old.config.phoneme_id_map,old.config.num_symbols),[1,0,40,0,2]);
+ assert.deepEqual(modelPhonemeIds(['c','\u0327'],current.config.phoneme_id_map,current.config.num_symbols),[1,0,16,0,140,0,2]);
+ assert.throws(()=>modelPhonemeIds(['☃'],old.config.phoneme_id_map,old.config.num_symbols),/no puede pronunciar/);
+ assert.throws(()=>modelPhonemeIds(['a'],{'^':[1],'_':[0],'$':[2],a:[99]},10),/vocabulario/);
 });
 test('la descarga se verifica antes de guardar y rechaza truncamiento, bytes distintos y exceso',async()=>{
  const data=new Uint8Array([1,2,3,4]),hash=Array.from(sha256(data),b=>b.toString(16).padStart(2,'0')).join(''),expected={bytes:4,sha256:hash};

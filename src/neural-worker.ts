@@ -2,8 +2,9 @@ import * as ort from 'onnxruntime-web/wasm';
 import {neuralVoices} from './voice-language';
 import {obtainVoiceModel} from './neural-cache';
 import {encodeWav} from './audio-wav';
+import {modelPhonemeIds} from './phoneme-model';
 
-let root='',session:ort.InferenceSession|undefined,modelId='',phonemizer:any,phonemes:number[]|undefined;
+let root='',session:ort.InferenceSession|undefined,modelId='',phonemizer:any,phonemes:string[]|undefined;
 const currentPhonemes=()=>phonemes;
 const worker=self as unknown as {onmessage:(e:MessageEvent)=>void;postMessage:(value:unknown,transfer?:Transferable[])=>void};
 async function synthesize(id:string,text:string,speed:number,progress:(message:string)=>void){
@@ -13,7 +14,7 @@ async function synthesize(id:string,text:string,speed:number,progress:(message:s
   progress('Preparando pronunciación local…');
   const url=new URL('piper-module.js',root).href;
   const {default:create}=await import(/* @vite-ignore */ url);
-  phonemizer=await create({noInitialRun:true,noExitRuntime:true,print:(line:string)=>{try{const data=JSON.parse(line);if(Array.isArray(data.phoneme_ids))phonemes=data.phoneme_ids;}catch{}},printErr:(line:string)=>console.warn('Pronunciación:',line),locateFile:(name:string)=>new URL(name,root).href});
+  phonemizer=await create({noInitialRun:true,noExitRuntime:true,print:(line:string)=>{try{const data=JSON.parse(line);if(Array.isArray(data.phonemes))phonemes=data.phonemes;}catch{}},printErr:(line:string)=>console.warn('Pronunciación:',line),locateFile:(name:string)=>new URL(name,root).href});
  }
  if(modelId!==voice.model){
   if(session){await session.release();session=undefined;modelId='';}
@@ -26,7 +27,7 @@ async function synthesize(id:string,text:string,speed:number,progress:(message:s
  phonemes=undefined;
  phonemizer.callMain(['-l',voice.config.espeak.voice,'--input',JSON.stringify([{text:text.trim()}]),'--espeak_data','/espeak-ng-data']);
  const sequence=currentPhonemes();if(!sequence?.length)throw Error('No se pudo convertir el texto en pronunciación.');
- const ids=BigInt64Array.from(sequence,BigInt),config=voice.config.inference;
+ const ids=BigInt64Array.from(modelPhonemeIds(sequence,voice.config.phoneme_id_map,voice.config.num_symbols),BigInt),config=voice.config.inference;
  const inputs:Record<string,ort.Tensor>={input:new ort.Tensor('int64',ids,[1,ids.length]),input_lengths:new ort.Tensor('int64',BigInt64Array.of(BigInt(ids.length)),[1]),scales:new ort.Tensor('float32',Float32Array.of(config.noise_scale,config.length_scale/Math.max(.65,Math.min(1.65,speed/165)),config.noise_w),[3])};
  if(session!.inputNames.includes('sid'))inputs.sid=new ort.Tensor('int64',BigInt64Array.of(BigInt(voice.speaker)),[1]);
  progress('Generando voz neuronal · '+voice.name+'…');
