@@ -20,6 +20,7 @@ export function detectTextLanguage(text:string):string|undefined{
  if(dominant(/[\u0370-\u03ff]/gu))return 'el';
  const unfamiliar=clean.replace(/[^\p{L}]/gu,'').replace(/[\p{Script=Latin}\p{Script=Cyrillic}]/gu,'').length;
  if(unfamiliar>=Math.max(1,letters*.3))return 'sin-modelo';
+ if(letters<60&&dominant(/[\u0400-\u04ff]/gu))return /[іїєґ]/iu.test(clean)?'uk':'ru';
  // Short dialogue and proper names inherit the chapter language. Statistical
  // guesses from a handful of Latin words frequently produce the wrong voice.
  if(letters<60)return undefined;

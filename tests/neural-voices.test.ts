@@ -23,6 +23,7 @@ test('idioma automático reconoce escritura de diez idiomas y evita inventarlo e
  ];for(const [expected,text] of samples)assert.equal(detectTextLanguage(text),expected,text);
  assert.equal(detectTextLanguage('Elena'),undefined);assert.equal(chapterLanguage('Elena','fr'),'fr');
  assert.equal(detectTextLanguage('Hola, Orion. ¿Has visto las estrellas?'),undefined);
+ assert.equal(detectTextLanguage('Привет'), 'ru');assert.equal(detectTextLanguage('Привіт'), 'uk');
  assert.equal(resolveNeuralVoice(defaultVoice(),'Elena','fr').language,'fr');
 });
 test('una voz preferida cambia a un modelo compatible al cambiar el idioma y permite anular detección',()=>{
