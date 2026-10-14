@@ -1,8 +1,9 @@
+import {validateAudiobook,type Audiobook} from './audio-model';
 export type Chapter={id:string;title:string;html:string;status:'idea'|'draft'|'review'|'done'};
 export type Character={id:string;name:string;familyId:string;portrait:string;role:string;aliases:string;biography:string;notes:string;birth:string;death:string};
 export type Family={id:string;name:string;color:string;description:string};
 export type Relation={id:string;from:string;to:string;type:'parent'|'partner'|'sibling'|'friend'|'rival'|'other';label:string;notes:string};
-export type StoryProject={format:'asteoria-lore';version:1;id:string;name:string;synopsis:string;genre:string;fandom:string;goal:number;font:string;chapters:Chapter[];characters:Character[];families:Family[];relations:Relation[];updated:number};
+export type StoryProject={format:'asteoria-lore';version:1;id:string;name:string;synopsis:string;genre:string;fandom:string;goal:number;font:string;chapters:Chapter[];characters:Character[];families:Family[];relations:Relation[];updated:number;audio?:Audiobook};
 export const uid=()=>crypto.randomUUID();
 export const blankChapter=(title='Capítulo 1'):Chapter=>({id:uid(),title,html:'<p></p>',status:'draft'});
 export const blankCharacter=(name='Nuevo personaje'):Character=>({id:uid(),name,familyId:'',portrait:'',role:'',aliases:'',biography:'',notes:'',birth:'',death:''});
@@ -11,7 +12,7 @@ export function storyTemplate(id:string){const p=createStory();if(id==='blank')r
 export function plainText(html:string){return html.replace(/<\/(?:p|h[1-6]|li|blockquote)>/gi,'\n').replace(/<br\s*\/?\s*>/gi,'\n').replace(/<[^>]*>/g,'').replace(/&nbsp;/g,' ').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"').replace(/&#39;/g,"'").replace(/&amp;/g,'&').trim();}
 export function wordCount(html:string){return plainText(html).match(/[\p{L}\p{N}]+(?:['’\-][\p{L}\p{N}]+)*/gu)?.length??0;}
 function validateChapterHtml(html:string){
- const allowed=new Set(['p','h1','h2','h3','h4','h5','h6','ul','ol','li','strong','b','em','i','u','s','strike','blockquote','pre','code','a','br','hr']);
+ const allowed=new Set(['p','h1','h2','h3','h4','h5','h6','ul','ol','li','strong','b','em','i','u','s','strike','blockquote','pre','code','a','br','hr','span']);
  for(const match of html.matchAll(/<\/?\s*([a-z][a-z0-9:-]*)\b/gi))if(!allowed.has(match[1].toLowerCase()))throw Error('Un capítulo contiene una etiqueta no permitida.');
  if(/\b(?:style|src|srcdoc|on\w+)\s*=/i.test(html))throw Error('Un capítulo contiene atributos no permitidos.');
 }
@@ -51,5 +52,5 @@ export function validateStory(value:unknown):StoryProject{
  for(const c of p.characters){for(const key of ['name','familyId','portrait','role','aliases','biography','notes','birth','death'] as const)if(typeof c[key]!=='string')throw Error('Una ficha no es válida.');if(c.familyId&&!families.has(c.familyId))throw Error('La familia de un personaje no existe.');if(c.portrait&&(!/^data:image\/(png|jpeg|webp);base64,[a-z0-9+/=]+$/i.test(c.portrait)||c.portrait.length>6_000_000))throw Error('Una imagen de personaje no es válida.');}
  for(const r of p.relations){if(!['parent','partner','sibling','friend','rival','other'].includes(r.type)||typeof r.label!=='string'||typeof r.notes!=='string')throw Error('Una relación no es válida.');validateRelation(p,r);}
  for(const chapter of p.chapters)validateChapterHtml(chapter.html);
- treeLayout(p);return p;
+ validateAudiobook(p.audio,new Set(p.chapters.map(c=>c.id)));treeLayout(p);return p;
 }
