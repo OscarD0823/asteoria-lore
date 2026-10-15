@@ -1,12 +1,12 @@
 import {Capacitor} from '@capacitor/core';
 import {defaultAudiobook,speechSegments,voiceFor} from './audio-model';
-import {chapterLanguage,isNeural,resolveNeuralVoice} from './voice-language';
+import {chapterLanguage,isNeural,resolveNeuralVoice,neuralVoices} from './voice-language';
 import type {StoryProject} from './stories-model';
 
 export const packagedAudio=()=>Capacitor.isNativePlatform()||['prisma:','prisma-architecture:'].includes(location.protocol);
 
 /** Resolve every actual utterance, including language changes within chapters. */
-export function projectVoiceModels(project:StoryProject){
+export function projectVoiceModels(project:StoryProject,all=false){
  const audio=project.audio??defaultAudiobook(),models=new Map<string,ReturnType<typeof resolveNeuralVoice>>();
  for(const chapter of project.chapters){
   const segments=speechSegments(chapter),fallback=chapterLanguage(segments.map(s=>s.text).join(' '),audio.language);
@@ -16,7 +16,7 @@ export function projectVoiceModels(project:StoryProject){
    const voice=voiceFor(audio,id);if(isNeural(voice)){const model=resolveNeuralVoice(voice,'',fallback);models.set(model.model,model);}
   }
  }
- return [...models.values()];
+ return all?[...new Map(neuralVoices.map(model=>[model.model,model])).values()]:[...models.values()];
 }
 
 export async function prepareAudioRuntime(progress:(message:string)=>void,signal?:AbortSignal){
@@ -30,7 +30,7 @@ export async function prepareAudioRuntime(progress:(message:string)=>void,signal
   const channel=new MessageChannel();let timer:ReturnType<typeof setTimeout>;
   const finish=(error?:unknown)=>{clearTimeout(timer);channel.port1.close();signal?.removeEventListener('abort',aborted);error?reject(error):resolve();};
   const aborted=()=>finish(new DOMException('Cancelado','AbortError'));
-  const heartbeat=()=>{clearTimeout(timer);timer=setTimeout(()=>finish(Error('La preparación no respondió. Vuelve a abrir la página para completar la actualización.')),60000);};
+  const heartbeat=()=>{clearTimeout(timer);timer=setTimeout(()=>finish(Error('La preparación no respondió. Vuelve a abrir la página para completar la actualización.')),180000);};
   channel.port1.onmessage=e=>{const state=e.data;if(state?.type!=='prisma-audio-offline')return;heartbeat();progress(`Preparando aplicación y audio sin conexión · ${state.cached} / ${state.total}`);if(state.error)finish(Error(state.error));else if(state.ready)finish();};
   signal?.addEventListener('abort',aborted,{once:true});heartbeat();
   worker.postMessage({type:'prisma-cache-audio'},[channel.port2]);

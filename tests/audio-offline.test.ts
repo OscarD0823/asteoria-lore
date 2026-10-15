@@ -22,3 +22,10 @@ test('dos personajes de un modelo multispeaker necesitan una sola descarga y res
  project.audio.voices.narrator={...defaultVoice(),language:'ja'};
  assert.throws(()=>projectVoiceModels(project),/Todavía no hay una voz neuronal/);
 });
+
+test('las voces automáticas españolas funcionan con los dos modelos incluidos en PC y APK',()=>{
+ const project=createStory(),person=blankCharacter();project.characters=[person];project.audio=defaultAudiobook();
+ project.audio.voices[person.id]={...defaultVoice(),profile:'neural-m'};
+ assert.deepEqual(new Set(projectVoiceModels(project).map(v=>v.model)),new Set(['es_AR-daniela-high','es_ES-sharvard-medium']));
+ const library=projectVoiceModels(project,true);assert.equal(new Set(library.map(v=>v.language)).size,10);assert.equal(library.length,new Set(library.map(v=>v.model)).size);assert.ok(library.length>10);
+});

@@ -26,6 +26,9 @@ Para reconstruir paquetes con voces españolas integradas: ejecuta node scripts/
 En Audiolibro, pulsa **Preparar audiolibro sin conexión** antes de desconectarte.
 Se prepara la aplicación web, el motor, los efectos y las voces que utilizan todos
 los capítulos y personajes. La preparación comprueba una generación de cada modelo.
+«Más idiomas y voces sin conexión → Descargar todas las voces» conserva la biblioteca
+completa, con el tamaño total indicado antes de descargar. Después permite cambiar
+entre los diez idiomas disponibles y sus voces sin descargar otros modelos.
 En Windows y Android, Daniela y SHarvard ya se incluyen; otras voces se descargan
 una vez y se verifican antes de guardarse. Una voz nueva o un idioma distinto puede
 necesitar otra preparación. Las voces no se sustituyen por síntesis clásica ante

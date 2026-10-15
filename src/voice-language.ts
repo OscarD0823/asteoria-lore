@@ -37,7 +37,9 @@ export function resolveNeuralVoice(voice:Voice,text:string,fallback='es'){
  if(!compatible.length)throw Error(`Todavía no hay una voz neuronal para el idioma «${language}». Elige el idioma correcto o usa una voz grabada. El texto no se enviará a un servidor.`);
  const preferred=neuralVoices.find(v=>'piper:'+v.id===voice.profile);
  const gender=preferred?.gender??(voice.profile==='neural-m'?'Masculinas':'Femeninas');
- return preferred?.language===language?preferred:(compatible.find(v=>v.gender===gender)??compatible[0]);
+ // The automatic Spanish pair is included in both native installers.
+ const spanishDefault=language==='es'&&voice.profile.startsWith('neural-')?compatible.find(v=>v.model===(gender==='Masculinas'?'es_ES-sharvard-medium':'es_AR-daniela-high')&&(gender!=='Masculinas'||v.speaker===0)):undefined;
+ return preferred?.language===language?preferred:(spanishDefault??compatible.find(v=>v.gender===gender)??compatible[0]);
 }
 export const isNeural=(voice:Voice)=>voice.profile.startsWith('neural-')||voice.profile.startsWith('piper:');
 export const languageName=(id:string)=>naturalLanguages.find(l=>l[0]===id)?.[1]??id;
