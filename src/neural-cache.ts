@@ -25,10 +25,12 @@ export async function obtainVoiceModel(id:string,root:string,progress:(message:s
  const model=neuralVoices.find(v=>v.id===id);if(!model)throw Error('Voz desconocida.');
  const saved=await readVoiceModel(model.sha256);if(saved?.size===model.bytes)return saved;
  // Desktop/APK packages may include selected models. Web packages never probe large files.
- const manifest=await fetch(new URL('bundled.json',root));const bundled=manifest.ok?await manifest.json() as string[]:[];
+ let bundled:string[]=[];
+ try{const manifest=await fetch(new URL('bundled.json',root));if(manifest.ok){const value=await manifest.json();if(Array.isArray(value)&&value.every(id=>typeof id==='string'))bundled=value;}}catch{}
  const local=bundled.includes(model.model);
  progress((local?'Preparando ':'Descargando ')+model.name+' · '+Math.ceil(model.bytes/1048576)+' MB…');
- const response=await fetch(local?new URL('models/'+encodeURIComponent(model.model)+'.onnx',root):model.url,{credentials:'omit',referrerPolicy:'no-referrer'});
+ let response:Response;
+ try{response=await fetch(local?new URL('models/'+encodeURIComponent(model.model)+'.onnx',root):model.url,{credentials:'omit',referrerPolicy:'no-referrer'});}catch{throw Error('Esta voz no está preparada en este dispositivo. Conéctate una vez y usa «Preparar audiolibro sin conexión». No se cambiará a una voz robótica.');}
  let lastPercent=-1;const blob=await verifiedModel(response,model,f=>{const percent=Math.floor(f*100);if(percent===lastPercent)return;lastPercent=percent;progress((local?'Preparando ':'Descargando ')+model.name+' · '+percent+' %');});
  try{await saveVoiceModel(model.sha256,blob);}catch{throw Error('No hay espacio para conservar esta voz. Libera almacenamiento o elimina otra voz descargada.');}
  return blob;

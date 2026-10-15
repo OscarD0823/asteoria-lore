@@ -21,3 +21,14 @@ Las licencias originales de Piper Phonemize/eSpeak NG (MIT/GPL-3.0), ONNX Runtim
 Las fichas y las licencias particulares de los datos de cada modelo se conservan en vendor/lore-neural. Se excluyeron modelos con licencia de datos NC o sin determinar. Los WAV incluyen créditos en metadatos RIFF INFO y el ZIP incluye Creditos de voces.txt. No se modifican los pesos originales ni se atribuyen los modelos a ASTEORIA.
 
 Para reconstruir paquetes con voces españolas integradas: ejecuta node scripts/download-lore-voices.mjs; define ASTEORIA_BUNDLED_VOICES con la ruta absoluta de .prisma/voices antes de compilar Lore o ASTEORIA. Una compilación sin esa variable descarga las voces durante el uso.
+# Uso sin internet
+
+En Audiolibro, pulsa **Preparar audiolibro sin conexión** antes de desconectarte.
+Se prepara la aplicación web, el motor, los efectos y las voces que utilizan todos
+los capítulos y personajes. La preparación comprueba una generación de cada modelo.
+En Windows y Android, Daniela y SHarvard ya se incluyen; otras voces se descargan
+una vez y se verifican antes de guardarse. Una voz nueva o un idioma distinto puede
+necesitar otra preparación. Las voces no se sustituyen por síntesis clásica ante
+un fallo: se muestra el recurso pendiente. El navegador puede eliminar datos si
+se borran sus archivos o falta almacenamiento; conserva copias de tus historias.
+
