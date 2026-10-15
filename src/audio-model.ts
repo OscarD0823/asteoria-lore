@@ -43,12 +43,12 @@ export function validateAudiobook(value:unknown,chapterIds:Set<string>):Audioboo
 // Only explicit speaker marks change the voice. Unmarked text belongs to the narrator.
 export function speechSegments(chapter:Chapter):SpeechSegment[]{
  const runs:{speaker:string;text:string}[]=[];
- const stack:string[]=[];let speaker='narrator',text='';
+ const stack:{speaker:string;skip:boolean}[]=[];let speaker='narrator',text='',skip=false;
  const flush=()=>{const decoded=plainText(text).replace(/\s+/g,' ').trim();if(decoded)runs.push({speaker,text:decoded});text='';};
  for(const token of chapter.html.match(/<[^>]*>|[^<]+/g)??[]){
-  if(!token.startsWith('<')){text+=token;continue;}
-  if(/^<span\b/i.test(token)){flush();stack.push(speaker);speaker=token.match(/data-speaker-id=["']([\w-]{1,100})["']/i)?.[1]??speaker;}
-  else if(/^<\/span/i.test(token)){flush();speaker=stack.pop()??'narrator';}
+  if(!token.startsWith('<')){if(!skip)text+=token;continue;}
+  if(/^<span\b/i.test(token)){flush();stack.push({speaker,skip});speaker=token.match(/data-speaker-id=["']([\w-]{1,100})["']/i)?.[1]??speaker;skip=skip||/data-speaker-label=["']true["']/i.test(token);}
+  else if(/^<\/span/i.test(token)){flush();const previous=stack.pop();speaker=previous?.speaker??'narrator';skip=previous?.skip??false;}
   else if(/^<\/(?:p|h[1-6]|li|blockquote|pre)>|^<br\b/i.test(token))flush();
  }
  flush();const occurrences=new Map<string,number>();

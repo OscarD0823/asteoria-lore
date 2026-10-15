@@ -5,3 +5,9 @@ export const SpeakerMark=Mark.create({
  parseHTML(){return[{tag:'span[data-speaker-id]'}];},
  renderHTML({HTMLAttributes}){return['span',mergeAttributes(HTMLAttributes,{class:'lore-speaker'}),0];},
 });
+// A recognized 'Name:' remains visible in the manuscript but is not spoken.
+export const SpeakerLabel=Mark.create({
+ name:'speakerLabel',inclusive:false,
+ parseHTML(){return[{tag:'span[data-speaker-label]'}];},
+ renderHTML(){return['span',{'data-speaker-label':'true',class:'lore-speaker-label'},0];},
+});
