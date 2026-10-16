@@ -4,11 +4,11 @@ export type Chapter={id:string;title:string;html:string;status:'idea'|'draft'|'r
 export type Character={id:string;name:string;familyId:string;portrait:string;role:string;aliases:string;biography:string;notes:string;birth:string;death:string;background?:LoreBackdrop};
 export type Family={id:string;name:string;color:string;description:string;crest?:string;background?:LoreBackdrop};
 export type Relation={id:string;from:string;to:string;type:'parent'|'partner'|'sibling'|'friend'|'rival'|'other';label:string;notes:string};
-export type StoryProject={format:'asteoria-lore';version:1;id:string;name:string;synopsis:string;genre:string;fandom:string;goal:number;font:string;chapters:Chapter[];characters:Character[];families:Family[];relations:Relation[];updated:number;audio?:Audiobook;treeBackground?:LoreBackdrop};
+export type StoryProject={format:'auralis-lore'|'asteoria-lore';version:1;id:string;name:string;synopsis:string;genre:string;fandom:string;goal:number;font:string;chapters:Chapter[];characters:Character[];families:Family[];relations:Relation[];updated:number;audio?:Audiobook;treeBackground?:LoreBackdrop};
 export const uid=()=>crypto.randomUUID();
 export const blankChapter=(title='Capítulo 1'):Chapter=>({id:uid(),title,html:'<p></p>',status:'draft'});
 export const blankCharacter=(name='Nuevo personaje'):Character=>({id:uid(),name,familyId:'',portrait:'',role:'',aliases:'',biography:'',notes:'',birth:'',death:''});
-export function createStory(name='Mi nueva historia'):StoryProject{return{format:'asteoria-lore',version:1,id:uid(),name,synopsis:'',genre:'Fantasía',fandom:'',goal:50000,font:'NotoSerif',chapters:[blankChapter()],characters:[],families:[],relations:[],updated:Date.now()};}
+export function createStory(name='Mi nueva historia'):StoryProject{return{format:'auralis-lore',version:1,id:uid(),name,synopsis:'',genre:'Fantasía',fandom:'',goal:50000,font:'NotoSerif',chapters:[blankChapter()],characters:[],families:[],relations:[],updated:Date.now()};}
 export function storyTemplate(id:string){const p=createStory();if(id==='blank')return p;if(id==='novel'){p.name='Mi novela';p.genre='Novela';p.goal=80000;p.chapters=['Un mundo por descubrir','El conflicto','La transformación'].map(blankChapter);}else if(id==='fanfic'){p.name='Mi fanfic';p.genre='Fanfic';p.goal=20000;p.chapters=['Un nuevo encuentro','Lo que cambia entre nosotros'].map(blankChapter);}else if(id==='short-story'){p.name='Mi relato';p.genre='Relato';p.goal=3000;p.chapters=[blankChapter('Un instante que lo cambia todo')];}else throw Error('Esta plantilla no está disponible.');return p;}
 export function plainText(html:string){return html.replace(/<\/(?:p|h[1-6]|li|blockquote)>/gi,'\n').replace(/<br\s*\/?\s*>/gi,'\n').replace(/<[^>]*>/g,'').replace(/&nbsp;/g,' ').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"').replace(/&#39;/g,"'").replace(/&amp;/g,'&').trim();}
 export function wordCount(html:string){return plainText(html).match(/[\p{L}\p{N}]+(?:['’\-][\p{L}\p{N}]+)*/gu)?.length??0;}
@@ -41,7 +41,7 @@ export function treeLayout(project:StoryProject,familyId=''){
  return{nodes,edges,width,height:Math.max(240,(Math.max(0,...level.values())+1)*170+40)};
 }
 export function validateStory(value:unknown):StoryProject{
- const p=value as StoryProject;if(!p||p.format!=='asteoria-lore'||p.version!==1)throw Error('Selecciona un proyecto de Asteoria Lore (.lore).');
+ const p=value as StoryProject;if(!p||!['auralis-lore','asteoria-lore'].includes(p.format)||p.version!==1)throw Error("Selecciona un proyecto de Auralis Lore (.lore).");
  const arrays=['chapters','characters','families','relations'] as const;
  for(const key of arrays)if(!Array.isArray(p[key])||(key!=='chapters'&&p[key].length>5000))throw Error('El proyecto contiene una colección no válida.');
  if(typeof p.id!=='string'||!p.id||typeof p.name!=='string'||p.name.length>500||!Number.isFinite(p.updated)||!Number.isFinite(p.goal)||p.goal<0||typeof p.font!=='string'||p.font.length>150)throw Error('Los datos del proyecto no son válidos.');

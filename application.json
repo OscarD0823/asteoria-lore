@@ -1,9 +1,9 @@
 {
   "product": "stories",
-  "name": "Asteoria Lore",
+  "name": "Auralis Lore",
   "channel": "beta",
-  "website": "https://oscard0823.github.io/asteoria-lore/",
-  "sourceRepository": "OscarD0823/asteoria-lore",
+  "website": "https://oscard0823.github.io/auralis-lore/",
+  "sourceRepository": "OscarD0823/auralis-lore",
   "sharedRepository": "OscarD0823/asteoria",
   "sourceRef": "main"
 }
